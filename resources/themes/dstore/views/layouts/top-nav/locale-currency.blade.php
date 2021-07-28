@@ -1,0 +1,123 @@
+@php
+    $searchQuery = request()->input();
+    if ($searchQuery && ! empty($searchQuery)) {
+        $searchQuery = implode('&', array_map(
+            function ($v, $k) {
+                if (is_array($v)) {
+                    if (is_array($v)) {
+                        $key = array_keys($v)[0];
+
+                        return $k. "[$key]=" . implode('&' . $k . '[]=', $v);
+                    } else {
+                        return $k. '[]=' . implode('&' . $k . '[]=', $v);
+                    }
+                } else {
+                    return $k . '=' . $v;
+                }
+            },
+            $searchQuery,
+            array_keys($searchQuery)
+        ));
+    } else {
+        $searchQuery = false;
+    }
+@endphp
+
+<div class="pull-left">
+    <div class="dropdown">
+        <a class="btn btn-link" href="{{ url('page/contact-us')}}"><i class="fa fa-envelope" aria-hidden="true"></i> Contact Us</a>
+    </div>
+</div>
+<div class="pull-left">
+    <div class="dropdown">
+        <a class="btn btn-link" href="{{ url('#')}}">Track Order</a>
+    </div>
+</div>
+{!! view_render_event('bagisto.shop.layout.header.locale.before') !!}
+    <div class="pull-left">
+        <div class="dropdown">
+            @php
+                $localeImage = null;
+            @endphp
+
+            @foreach (core()->getCurrentChannel()->locales as $locale)
+                @if ($locale->code == app()->getLocale())
+                    @php
+                        $localeImage = $locale->locale_image;
+                    @endphp
+                @endif
+            @endforeach
+
+            <div class="locale-icon">
+                @if ($localeImage)
+                    <img src="{{ asset('/storage/' . $localeImage) }}" onerror="this.src = '{{ asset($localeImage) }}'" />
+                @elseif (app()->getLocale() == 'en')
+                    <img src="{{ asset('/themes/velocity/assets/images/flags/en.png') }}" />
+                @endif
+            </div>
+
+            <select
+                class="btn btn-link dropdown-toggle control locale-switcher styled-select"
+                onchange="window.location.href = this.value"
+                @if (count(core()->getCurrentChannel()->locales) == 1)
+                    disabled="disabled"
+                @endif>
+
+                @foreach (core()->getCurrentChannel()->locales as $locale)
+                    @if (isset($searchQuery) && $searchQuery)
+                        <option
+                            value="?{{ $searchQuery }}&locale={{ $locale->code }}"
+                            {{ $locale->code == app()->getLocale() ? 'selected' : '' }}>
+                            {{ $locale->name }}
+                        </option>
+                    @else
+                        <option value="?locale={{ $locale->code }}" {{ $locale->code == app()->getLocale() ? 'selected' : '' }}>{{ $locale->name }}</option>
+                    @endif
+                @endforeach
+            </select>
+
+            <div class="select-icon-container">
+                <span class="select-icon rango-arrow-down"></span>
+            </div>
+        </div>
+    </div>
+
+{!! view_render_event('bagisto.shop.layout.header.locale.after') !!}
+
+{!! view_render_event('bagisto.shop.layout.header.currency-item.before') !!}
+
+    @if (core()->getCurrentChannel()->currencies->count() > 1)
+        <div class="pull-left">
+            <div class="dropdown">
+               <select
+                    class="btn btn-link dropdown-toggle control locale-switcher styled-select"
+                    onchange="window.location.href = this.value" disabled="disabled">
+                    @foreach (core()->getCurrentChannel()->currencies as $currency)
+                        @if (isset($searchQuery) && $searchQuery)
+                            <option value="?{{ $searchQuery }}&currency={{ $currency->code }}" {{ $currency->code == core()->getCurrentCurrencyCode() ? 'selected' : '' }}>{{ $currency->code }}</option>
+                        @else
+                            <option value="?currency={{ $currency->code }}" {{ $currency->code == core()->getCurrentCurrencyCode() ? 'selected' : '' }}>{{ $currency->code }}</option>
+                        @endif
+                    @endforeach
+
+                </select>
+
+                <div class="select-icon-container">
+                    <span class="select-icon rango-arrow-down"></span>
+                </div>
+            </div>
+        </div>
+    @endif
+
+{!! view_render_event('bagisto.shop.layout.header.currency-item.after') !!}
+<div class="pull-left">
+    <div class="dropdown">
+        <button class="btn btn-link " type="button" id="ResourcesButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Resources <i class="fa fa-angle-down"></i>
+        </button>
+        <div class="dropdown-menu" aria-labelledby="ResourcesButton">
+            <a class="dropdown-item" href="#">OUR STORIES</a>
+            <a class="dropdown-item" href="#">ISLAMIC CALENDAR</a>
+        </div>
+    </div>
+</div>
